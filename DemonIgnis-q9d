@@ -1,0 +1,183 @@
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "UltimateSkillGui"
+screenGui.ResetOnSpawn = false
+
+-- Fungsi Util
+local function createButton(name, pos, color, textColor, callback)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0, 90, 0, 18)
+	btn.Position = pos
+	btn.BackgroundColor3 = color
+	btn.TextColor3 = textColor
+	btn.Text = name
+	btn.TextScaled = true
+	btn.Font = Enum.Font.SourceSansBold
+	btn.Parent = screenGui
+	btn.Active = true
+	btn.Draggable = true
+	btn.BorderSizePixel = 1
+	btn.MouseButton1Click:Connect(callback)
+	return btn
+end
+
+local function createLabel(text, pos, color)
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(0, 90, 0, 14)
+	label.Position = pos
+	label.BackgroundTransparency = 1
+	label.TextColor3 = color
+	label.Text = text
+	label.TextScaled = true
+	label.Font = Enum.Font.SourceSansBold
+	label.Parent = screenGui
+end
+
+local function rainbowText(obj)
+	while true do
+		for i = 0, 1, 0.01 do
+			obj.TextColor3 = Color3.fromHSV(i, 1, 1)
+			task.wait(0.03)
+		end
+	end
+end
+
+-- Posisi awal
+local rightStart = UDim2.new(1, -100, 0, 50)
+local leftStart = UDim2.new(0, 10, 0, 50)
+local offsetY = 22
+
+-- BUTTON + LOGIKA
+local yR = 0
+local yL = 0
+
+-- IMMORTALITY
+createButton("Immortality", rightStart + UDim2.new(0, 0, 0, yR), Color3.new(0, 0, 0), Color3.new(1, 0, 0), function()
+	while true do
+		local args = {"Beserk", "Haku", Vector3.new(1117.373, 180.99, -38.243)}
+		game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(args))
+		wait(10)
+	end
+end)
+yR += offsetY
+
+-- ABSOLUTE BLOW
+createButton("Absolute Blow", rightStart + UDim2.new(0, 0, 0, yR), Color3.fromRGB(0, 0, 255), Color3.new(1, 0, 0), function()
+	local a = {"Darknight", "ChantDarkSlash"}
+	local b = {"Beserk", "BeserkSlam"}
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(a))
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(b))
+end)
+yR += offsetY
+
+-- GOD OF LIBERATION
+local godBtn = createButton("God Of Liberation Mode", rightStart + UDim2.new(0, 0, 0, yR), Color3.new(1, 1, 1), Color3.new(1, 0, 0), function()
+	for i = 1, 2 do
+		local args1 = {"Beserk", "Gear5", Vector3.new(1117.296, 182.718, -35.908)}
+		local baryon = game:GetService("ReplicatedStorage").Events.Baryon
+		game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(args1))
+		baryon:FireServer()
+	end
+end)
+spawn(function() rainbowText(godBtn) end)
+yR += offsetY
+
+-- ABSOLUTE HEAL
+createButton("Absolute Heal", rightStart + UDim2.new(0, 0, 0, yR), Color3.new(1, 1, 1), Color3.fromRGB(0, 100, 0), function()
+	local a = {"L", "FateHeal", CFrame.new(1125.767, 182, -57.465, -0.679, 0.300, -0.669, 0, 0.912, 0.409, 0.733, 0.278, -0.619)}
+	local b = {"Beserk", "AtomicHeal", Vector3.new(1122.551, 182, -78.981)}
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(a))
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(b))
+end)
+yR += offsetY
+
+-- ABSOLUTE STORM
+createButton("Absolute Storm", rightStart + UDim2.new(0, 0, 0, yR), Color3.fromRGB(128, 128, 128), Color3.new(1, 0, 0), function()
+	local rep = game:GetService("ReplicatedStorage").Events.Skill
+	local a = {"Fist", "SlashBarrage"}
+	local b = {"Beserk", "SlashStorm", Vector3.new(1139.009, 182, -47.519)}
+	local c = {"L", "FateStorm", CFrame.new(1118.138, 181.534, -75.590, -0.533, 0.553, -0.639, 0, 0.756, 0.654, 0.845, 0.348, -0.403)}
+	for i = 1, 10 do
+		rep:FireServer(unpack(a))
+		rep:FireServer(unpack(b))
+		rep:FireServer(unpack(c))
+	end
+end)
+yR += offsetY
+
+-- GAY
+createButton("Gay", rightStart + UDim2.new(0, 0, 0, yR), Color3.fromRGB(139, 0, 0), Color3.new(1, 0, 0), function()
+	local args = {"Beserk", "NightDragon", Vector3.new(1134.816, 182, -52.368)}
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(args))
+end)
+yR += offsetY
+
+-- DEMONIC BEAM
+createButton("Demonic Beam", rightStart + UDim2.new(0, 0, 0, yR), Color3.new(0, 0, 0), Color3.fromRGB(139, 0, 0), function()
+	for i = 1, 10 do
+		local args = {"Beserk", "AlterBeam", Vector3.new(1219.092, 181.139, -50.649)}
+		game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(args))
+	end
+end)
+yR += offsetY
+
+-- BONUS SCRIPT (LABEL)
+createLabel("Bonus Script", rightStart + UDim2.new(0, 0, 0, yR), Color3.new(1,1,1))
+spawn(function() rainbowText(screenGui:FindFirstChild("TextLabel")) end)
+yR += offsetY
+
+-- ======= KIRI ATAS =======
+local function fateButton(name, posY, func)
+	local b = createButton(name, leftStart + UDim2.new(0, 0, 0, posY), Color3.new(1,1,1), Color3.fromRGB(255, 255, 0), func)
+	return b
+end
+
+fateButton("Fate Rush", yL, function()
+	local args = {"L", "FateRush", CFrame.new(1199.067, 177.868, -129.492, -0.616, 0.309, -0.723, 0, 0.919, 0.393, 0.787, 0.242, -0.567)}
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(args))
+end)
+yL += offsetY
+
+fateButton("Fate Combo", yL, function()
+	local args = {"L", "FateCombo", CFrame.new(1199.067, 177.868, -129.492, -0.616, 0.309, -0.723, 0, 0.919, 0.393, 0.787, 0.242, -0.567)}
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(args))
+end)
+yL += offsetY
+
+fateButton("Fate Storm", yL, function()
+	local args = {"L", "FateStorm", CFrame.new(1199.067, 177.868, -129.492, -0.616, 0.309, -0.723, 0, 0.919, 0.393, 0.787, 0.242, -0.567)}
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(args))
+end)
+yL += offsetY
+
+fateButton("Fate Heal", yL, function()
+	local args = {"L", "FateHeal", CFrame.new(1199.067, 177.868, -129.492, -0.616, 0.309, -0.723, 0, 0.919, 0.393, 0.787, 0.242, -0.567)}
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(args))
+end)
+yL += offsetY
+
+fateButton("Alter Fate Transformation", yL, function()
+	local args = {"Beserk", "AlterTransformation", Vector3.new(1128.437, 182, -103.841)}
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(args))
+end)
+yL += offsetY
+
+fateButton("Alter Fate Beam", yL, function()
+	local args = {"Beserk", "AlterBeam", Vector3.new(1219.092, 181.139, -50.649)}
+	game:GetService("ReplicatedStorage").Events.Skill:FireServer(unpack(args))
+end)
+yL += offsetY
+
+-- FATE POWER TEXT
+createLabel("Fate Power", leftStart + UDim2.new(0, 0, 0, yL), Color3.fromRGB(255, 255, 0))
+
+-- MADE BY TEXT
+local madeBy = Instance.new("TextLabel")
+madeBy.Text = "Made By DemonIgnis-q9d"
+madeBy.TextColor3 = Color3.new(1, 1, 1)
+madeBy.BackgroundTransparency = 1
+madeBy.Size = UDim2.new(0, 200, 0, 18)
+madeBy.Position = UDim2.new(1, -200, 1, -20)
+madeBy.Font = Enum.Font.SourceSansBold
+madeBy.TextScaled = true
+madeBy.Parent = screenGui
