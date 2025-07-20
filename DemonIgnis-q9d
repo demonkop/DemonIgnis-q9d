@@ -1,153 +1,227 @@
--- GUI Initialization
+-- GUI Utama
 local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
-ScreenGui.Name = "SkillButtonsGUI"
+ScreenGui.Name = "UltimateTinyButtonHub"
+local UIS = game:GetService("UserInputService")
 
--- Utility function to create draggable buttons
-local function createButton(name, pos, color, textColor, callback)
-	local btn = Instance.new("TextButton")
-	btn.Name = name
-	btn.Size = UDim2.new(0, 100, 0, 20)
-	btn.Position = pos
-	btn.BackgroundColor3 = color
-	btn.TextColor3 = textColor
-	btn.Text = name
-	btn.Font = Enum.Font.SourceSansBold
-	btn.TextSize = 12
-	btn.Parent = ScreenGui
-	btn.Active = true
-	btn.Draggable = true
-	btn.MouseButton1Click:Connect(callback)
-	return btn
+-- Fungsi Drag
+local function makeDraggable(button)
+	local dragging, offset
+	button.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+			offset = input.Position - button.AbsolutePosition
+		end
+	end)
+	UIS.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+	UIS.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			button.Position = UDim2.new(0, input.Position.X - offset.X, 0, input.Position.Y - offset.Y)
+		end
+	end)
 end
 
--- Utility function to create text labels
-local function createLabel(name, pos, text, color)
-	local lbl = Instance.new("TextLabel")
-	lbl.Name = name
-	lbl.Size = UDim2.new(0, 100, 0, 12)
-	lbl.Position = pos
-	lbl.BackgroundTransparency = 1
-	lbl.TextColor3 = color
-	lbl.Text = text
-	lbl.Font = Enum.Font.SourceSans
-	lbl.TextSize = 10
-	lbl.Parent = ScreenGui
+-- Fungsi Button
+local function createButton(name, color, textColor, position, action)
+	local button = Instance.new("TextButton")
+	button.Text = name
+	button.Size = UDim2.new(0, 90, 0, 14)
+	button.Position = position
+	button.BackgroundColor3 = color
+	button.TextColor3 = textColor
+	button.TextSize = 10
+	button.BorderSizePixel = 0
+	button.AutoButtonColor = true
+	button.Font = Enum.Font.SourceSansBold
+	button.Parent = ScreenGui
+	makeDraggable(button)
+	button.MouseButton1Click:Connect(action)
+	return button
 end
 
--- Helper functions
-local function fireSkill(args)
-	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args))
+-- Fungsi Teks Kecil
+local function createLabel(text, color, position)
+	local label = Instance.new("TextLabel")
+	label.Text = text
+	label.Size = UDim2.new(0, 90, 0, 12)
+	label.Position = position
+	label.BackgroundTransparency = 1
+	label.TextColor3 = color
+	label.TextSize = 10
+	label.Font = Enum.Font.SourceSans
+	label.TextXAlignment = Enum.TextXAlignment.Center
+	label.Parent = ScreenGui
 end
 
-local function fireBaryon()
-	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Baryon"):FireServer()
+-- Util Fungsi
+local function runLooped(delayTime, func)
+	coroutine.wrap(function()
+		while true do
+			func()
+			wait(delayTime)
+		end
+	end)()
 end
 
--- Starting positions
-local rightTopStartY = 10
-local leftTopStartY = 10
-local spacing = 21
-
-local function nextPosRight(index)
-	return UDim2.new(1, -110, 0, rightTopStartY + (index * spacing))
-end
-
-local function nextPosLeft(index)
-	return UDim2.new(0, 10, 0, leftTopStartY + (index * spacing))
-end
-
-local rightIndex = 0
-local leftIndex = 0
-
--- === BUTTONS (Kanan Atas) ===
-createButton("Immortallity", nextPosRight(rightIndex), Color3.fromRGB(0, 0, 0), Color3.fromRGB(255, 0, 0), function()
-	while true do
-		fireSkill({
-			[1] = "Beserk",
-			[2] = "Haku",
-			[3] = Vector3.new(1117.373, 180.990, -38.243)
-		})
-		task.wait(10)
+local function runTogether(times, func)
+	for _ = 1, times do
+		coroutine.wrap(func)()
 	end
-end) rightIndex += 1
+end
 
-createButton("Absolute Blow", nextPosRight(rightIndex), Color3.fromRGB(0, 0, 255), Color3.fromRGB(255, 0, 0), function()
-	fireSkill({[1]="Darknight",[2]="ChantDarkSlash"})
-	fireSkill({[1]="Beserk",[2]="BeserkSlam"})
-end) rightIndex += 1
+-- Button Positions
+local rightStartY = 10
+local leftStartY = 10
+local gap = 15
+local rightX = UDim2.new(1, -100, 0, rightStartY)
+local leftX = UDim2.new(0, 10, 0, leftStartY)
 
-createButton("God Of Liberation Mode", nextPosRight(rightIndex), Color3.fromRGB(255, 255, 255), Color3.fromHSV(tick() % 5 / 5, 1, 1), function()
-	for _ = 1, 2 do
-		fireSkill({[1]="Beserk",[2]="Gear5",[3]=Vector3.new(1117.296,182.718,-35.908)})
-		fireBaryon()
-	end
-end) rightIndex += 1
+-- POJOK KANAN ATAS
 
-createButton("Absolute Heal", nextPosRight(rightIndex), Color3.fromRGB(255,255,255), Color3.fromRGB(0,100,0), function()
-	fireSkill({[1]="L",[2]="FateHeal",[3]=CFrame.new(1125.767,182,-57.465,-0.679,0.3,-0.669,0,0.912,0.409,0.733,0.278,-0.619)})
-	fireSkill({[1]="Beserk",[2]="AtomicHeal",[3]=Vector3.new(1122.551,182,-78.981)})
-end) rightIndex += 1
+-- Immortallity
+createButton("Immortallity", Color3.fromRGB(0,0,0), Color3.fromRGB(255,0,0), rightX, function()
+	runLooped(10, function()
+		local args = {"Beserk", "Haku", Vector3.new(1117.373, 180.99, -38.243)}
+		game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args))
+	end)
+end)
 
-createButton("Absolute Storm", nextPosRight(rightIndex), Color3.fromRGB(128,128,128), Color3.fromRGB(255,0,0), function()
+-- Absolute Blow
+rightX = rightX + UDim2.new(0, 0, 0, gap)
+createButton("Absolute Blow", Color3.fromRGB(0,0,255), Color3.fromRGB(255,0,0), rightX, function()
+	local args1 = {"Darknight", "ChantDarkSlash"}
+	local args2 = {"Beserk", "BeserkSlam"}
+	local event = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill")
+	event:FireServer(unpack(args1))
+	event:FireServer(unpack(args2))
+end)
+
+-- God Of Liberation Mode
+rightX = rightX + UDim2.new(0, 0, 0, gap)
+createButton("God Of Liberation Mode", Color3.fromRGB(255,255,255), Color3.fromHSV(tick()%5/5,1,1), rightX, function()
+	local ev = game:GetService("ReplicatedStorage"):WaitForChild("Events")
+	local args1 = {"Beserk", "Gear5", Vector3.new(1117.296875, 182.7184, -35.9082)}
+	local args2 = {}
+	runTogether(2, function() ev.Skill:FireServer(unpack(args1)) end)
+	runTogether(2, function() ev.Baryon:FireServer() end)
+end)
+
+-- Absolute Heal
+rightX = rightX + UDim2.new(0, 0, 0, gap)
+createButton("Absolute Heal", Color3.fromRGB(255,255,255), Color3.fromRGB(0,100,0), rightX, function()
+	local ev = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill")
+	local args1 = {"L", "FateHeal", CFrame.new(1125.767, 182, -57.465)}
+	local args2 = {"Beserk", "AtomicHeal", Vector3.new(1122.551, 182, -78.981)}
+	ev:FireServer(unpack(args1))
+	ev:FireServer(unpack(args2))
+end)
+
+-- Absolute Storm
+rightX = rightX + UDim2.new(0, 0, 0, gap)
+createButton("Absolute Storm", Color3.fromRGB(128,128,128), Color3.fromRGB(255,0,0), rightX, function()
+	local ev = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill")
+	local a1 = {"Fist", "SlashBarrage"}
+	local a2 = {"Beserk", "SlashStorm", Vector3.new(1139.009, 182, -47.519)}
+	local a3 = {"L", "FateStorm", CFrame.new(1118.138, 181.534, -75.590)}
 	for _ = 1, 10 do
-		fireSkill({[1]="Fist",[2]="SlashBarrage"})
-		fireSkill({[1]="Beserk",[2]="SlashStorm",[3]=Vector3.new(1139.009,182,-47.519)})
-		fireSkill({[1]="L",[2]="FateStorm",[3]=CFrame.new(1118.138,181.534,-75.590,-0.533,0.553,-0.639,0,0.756,0.654,0.845,0.348,-0.403)})
+		ev:FireServer(unpack(a1))
+		ev:FireServer(unpack(a2))
+		ev:FireServer(unpack(a3))
 	end
-end) rightIndex += 1
+end)
 
-createButton("Gay", nextPosRight(rightIndex), Color3.fromRGB(139,0,0), Color3.fromRGB(255,0,0), function()
-	fireSkill({[1]="Beserk",[2]="NightDragon",[3]=Vector3.new(1134.816,182,-52.368)})
-end) rightIndex += 1
+-- Dragon Fist
+rightX = rightX + UDim2.new(0, 0, 0, gap)
+createButton("Dragon Fist", Color3.fromRGB(255,255,0), Color3.fromRGB(180,180,0), rightX, function()
+	local args = {"Beserk", "DragonFist", Vector3.new(1131.867, 182, -97.820)}
+	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args))
+end)
 
-createButton("English Or Spanish", nextPosRight(rightIndex), Color3.fromRGB(144, 238, 144), Color3.fromRGB(0, 0, 139), function()
-	for _ = 1, 20 do
-		fireSkill({[1]="Gojo",[2]="CursedStop"})
-	end
-end) rightIndex += 1
+-- Hakai
+rightX = rightX + UDim2.new(0, 0, 0, gap)
+createButton("Hakai", Color3.fromRGB(128,0,128), Color3.fromRGB(75,0,75), rightX, function()
+	local args = {"Beserk", "Hakai", Vector3.new(1095.711, 178, -54.078)}
+	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args))
+end)
 
-createButton("Super Kamehameha", nextPosRight(rightIndex), Color3.fromRGB(0,0,0), Color3.fromRGB(139,0,0), function()
-	for _ = 1, 20 do
-		fireSkill({[1]="Beserk",[2]="AlterBeam",[3]=Vector3.new(1219.093,181.139,-50.649)})
-	end
-end) rightIndex += 1
+-- English Or Spanish
+rightX = rightX + UDim2.new(0, 0, 0, gap)
+createButton("English Or Spanish", Color3.fromRGB(144,238,144), Color3.fromRGB(0,0,139), rightX, function()
+	local args = {"Gojo", "CursedStop"}
+	local ev = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill")
+	for _ = 1, 20 do ev:FireServer(unpack(args)) end
+end)
 
--- Bonus Text di bawah tombol Demonic Beam (Asumsi posisinya baris 7)
-createLabel("BonusScript", nextPosRight(rightIndex), "Bonus Script", Color3.fromHSV(tick()%5/5,1,1)) rightIndex += 1
+-- Super Kamehameha
+rightX = rightX + UDim2.new(0, 0, 0, gap)
+createButton("Super Kamehameha", Color3.fromRGB(0,0,0), Color3.fromRGB(139,0,0), rightX, function()
+	local args = {"Beserk", "AlterBeam", Vector3.new(1219.092, 181.139, -50.649)}
+	local ev = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill")
+	for _ = 1, 20 do ev:FireServer(unpack(args)) end
+end)
 
--- === BUTTONS (Kiri Atas) ===
-createButton("Fate Rush", nextPosLeft(leftIndex), Color3.fromRGB(255,255,255), Color3.fromRGB(255,255,0), function()
-	fireSkill({[1]="L",[2]="FateRush",[3]=CFrame.new(1199.067,177.868,-129.492,-0.616,0.309,-0.723,0,0.919,0.393,0.787,0.242,-0.567)})
-end) leftIndex += 1
+-- Label Bonus Script (di bawah Demonic Beam)
+rightX = rightX + UDim2.new(0, 0, 0, gap)
+createLabel("Bonus Script", Color3.fromHSV(tick()%5/5,1,1), rightX + UDim2.new(0,0,0,14))
 
-createButton("Fate Combo", nextPosLeft(leftIndex), Color3.fromRGB(255,255,255), Color3.fromRGB(255,255,0), function()
-	fireSkill({[1]="L",[2]="FateCombo",[3]=CFrame.new(1199.067,177.868,-129.492,-0.616,0.309,-0.723,0,0.919,0.393,0.787,0.242,-0.567)})
-end) leftIndex += 1
+-- POJOK KIRI ATAS
 
-createButton("Fate Storm", nextPosLeft(leftIndex), Color3.fromRGB(255,255,255), Color3.fromRGB(255,255,0), function()
-	fireSkill({[1]="L",[2]="FateStorm",[3]=CFrame.new(1199.067,177.868,-129.492,-0.616,0.309,-0.723,0,0.919,0.393,0.787,0.242,-0.567)})
-end) leftIndex += 1
+-- Fungsi Helper untuk posisi kiri
+local function leftButton(name, color, textColor, action)
+	leftX = leftX + UDim2.new(0, 0, 0, gap)
+	return createButton(name, color, textColor, leftX, action)
+end
 
-createButton("Fate Heal", nextPosLeft(leftIndex), Color3.fromRGB(255,255,255), Color3.fromRGB(255,255,0), function()
-	fireSkill({[1]="L",[2]="FateHeal",[3]=CFrame.new(1199.067,177.868,-129.492,-0.616,0.309,-0.723,0,0.919,0.393,0.787,0.242,-0.567)})
-end) leftIndex += 1
+-- Fate Rush
+leftButton("Fate Rush", Color3.fromRGB(255,255,255), Color3.fromRGB(255,255,0), function()
+	local args = {"L", "FateRush", CFrame.new(1199.067, 177.868, -129.492)}
+	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args))
+end)
 
-createButton("Alter Fate Transformation", nextPosLeft(leftIndex), Color3.fromRGB(0,0,0), Color3.fromRGB(139,0,0), function()
-	fireSkill({[1]="Beserk",[2]="AlterTransformation",[3]=Vector3.new(1128.437,182,-103.841)})
-end) leftIndex += 1
+-- Fate Combo
+leftButton("Fate Combo", Color3.fromRGB(255,255,255), Color3.fromRGB(255,255,0), function()
+	local args = {"L", "FateCombo", CFrame.new(1199.067, 177.868, -129.492)}
+	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args))
+end)
 
-createButton("Alter Fate Beam", nextPosLeft(leftIndex), Color3.fromRGB(0,0,0), Color3.fromRGB(139,0,0), function()
-	fireSkill({[1]="Beserk",[2]="AlterBeam",[3]=Vector3.new(1219.093,181.139,-50.649)})
-end) leftIndex += 1
+-- Fate Storm
+leftButton("Fate Storm", Color3.fromRGB(255,255,255), Color3.fromRGB(255,255,0), function()
+	local args = {"L", "FateStorm", CFrame.new(1199.067, 177.868, -129.492)}
+	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args))
+end)
 
--- Label bawah Alter Fate Beam
-createLabel("FatePower", nextPosLeft(leftIndex), "Fate Power", Color3.fromRGB(255,255,0)) leftIndex += 1
+-- Fate Heal
+leftButton("Fate Heal", Color3.fromRGB(255,255,255), Color3.fromRGB(255,255,0), function()
+	local args = {"L", "FateHeal", CFrame.new(1199.067, 177.868, -129.492)}
+	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args))
+end)
+
+-- Alter Fate Transformation
+leftButton("Alter Fate Transformation", Color3.fromRGB(0,0,0), Color3.fromRGB(139,0,0), function()
+	local args = {"Beserk", "AlterTransformation", Vector3.new(1128.437, 182, -103.841)}
+	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args))
+end)
+
+-- Alter Fate Beam
+leftX = leftX + UDim2.new(0, 0, 0, gap)
+createButton("Alter Fate Beam", Color3.fromRGB(0,0,0), Color3.fromRGB(139,0,0), leftX, function()
+	local args = {"Beserk", "AlterBeam", Vector3.new(1219.092, 181.139, -50.649)}
+	game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args))
+end)
+
+-- Label Fate Power di bawah Alter Fate Beam
+createLabel("Fate Power", Color3.fromRGB(255, 255, 0), leftX + UDim2.new(0, 0, 0, 14))
 
 -- Label pojok kanan bawah
-local bottomRightLabel = Instance.new("TextLabel", ScreenGui)
-bottomRightLabel.Text = "Made By DemonIgnis-q9d"
-bottomRightLabel.Position = UDim2.new(1, -200, 1, -20)
-bottomRightLabel.Size = UDim2.new(0, 180, 0, 18)
-bottomRightLabel.TextColor3 = Color3.fromRGB(255,255,255)
-bottomRightLabel.BackgroundTransparency = 1
-bottomRightLabel.TextSize = 12
+local finalText = Instance.new("TextLabel")
+finalText.Size = UDim2.new(0, 200, 0, 20)
+finalText.Position = UDim2.new(1, -210, 1, -30)
+finalText.Text = "Made By DemonIgnis-q9d"
+finalText.BackgroundTransparency = 1
+finalText.TextColor3 = Color3.fromRGB(255, 255, 255)
+finalText.TextSize = 10
+finalText.Font = Enum.Font.SourceSans
+finalText.Parent = ScreenGui
